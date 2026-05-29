@@ -16,16 +16,68 @@ class Pedido {
     }
 }
 
-// 3. Servicos com responsabilidades especificas
-class CalculadoraDescontoPedido {
+// 3. Estrategias de desconto
+interface IEstrategiaDesconto {
+    aplicaPara(tipoCliente: string): boolean;
+    calcular(pedido: Pedido): number;
+}
+
+class DescontoClienteVip implements IEstrategiaDesconto {
+    aplicaPara(tipoCliente: string): boolean {
+        return tipoCliente === "VIP";
+    }
+
     calcular(pedido: Pedido): number {
-        if (pedido.tipoCliente === "VIP") {
-            return pedido.valorTotal * 0.20;
-        } else if (pedido.tipoCliente === "ESTUDANTE") {
-            return pedido.valorTotal * 0.10;
+        return pedido.valorTotal * 0.20;
+    }
+}
+
+class DescontoClienteEstudante implements IEstrategiaDesconto {
+    aplicaPara(tipoCliente: string): boolean {
+        return tipoCliente === "ESTUDANTE";
+    }
+
+    calcular(pedido: Pedido): number {
+        return pedido.valorTotal * 0.10;
+    }
+}
+
+class DescontoClientePremium implements IEstrategiaDesconto {
+    aplicaPara(tipoCliente: string): boolean {
+        return tipoCliente === "PREMIUM";
+    }
+
+    calcular(pedido: Pedido): number {
+        return pedido.valorTotal * 0.15;
+    }
+}
+
+class SemDesconto implements IEstrategiaDesconto {
+    aplicaPara(): boolean {
+        return true;
+    }
+
+    calcular(): number {
+        return 0;
+    }
+}
+
+// 4. Servicos com responsabilidades especificas
+class CalculadoraDescontoPedido {
+    private estrategias: IEstrategiaDesconto[];
+
+    constructor(estrategias: IEstrategiaDesconto[]) {
+        this.estrategias = estrategias;
+    }
+
+    calcular(pedido: Pedido): number {
+        const estrategia = this.estrategias.find((item) => item.aplicaPara(pedido.tipoCliente));
+
+        if (!estrategia) {
+            return 0;
         }
 
-        return 0;
+        return estrategia.calcular(pedido);
     }
 }
 
@@ -53,14 +105,14 @@ class EmailPedidoService {
     }
 }
 
-// 4. Interface de tarefas do pedido
+// 5. Interface de tarefas do pedido
 interface ITarefasPedido {
     processarPagamento(): void;
     gerarNotaFiscal(): void;
     imprimirEtiquetaFisica(): void;
 }
 
-// 5. Implementacao para produtos digitais
+// 6. Implementacao para produtos digitais
 class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
     processarPagamento(): void {
         console.log("Pagamento processado online.");
