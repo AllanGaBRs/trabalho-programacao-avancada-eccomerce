@@ -106,8 +106,11 @@ class EmailPedidoService {
 }
 
 // 5. Interfaces de capacidades do pedido
-interface ITarefasPedido {
+interface IPedidoComPagamento {
     processarPagamento(): void;
+}
+
+interface IPedidoComNotaFiscal {
     gerarNotaFiscal(): void;
 }
 
@@ -120,7 +123,7 @@ interface IPedidoComEtiquetaFisica {
 }
 
 // 6. Implementacoes especificas de pedidos
-class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
+class PedidoProdutoDigital extends Pedido implements IPedidoComPagamento, IPedidoComNotaFiscal {
     processarPagamento(): void {
         console.log("Pagamento processado online.");
     }
@@ -130,7 +133,7 @@ class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
     }
 }
 
-class PedidoProdutoFisico extends Pedido implements ITarefasPedido, IPedidoComFrete, IPedidoComEtiquetaFisica {
+class PedidoProdutoFisico extends Pedido implements IPedidoComPagamento, IPedidoComNotaFiscal, IPedidoComFrete, IPedidoComEtiquetaFisica {
     calcularFrete(): number {
         return 15.0;
     }
