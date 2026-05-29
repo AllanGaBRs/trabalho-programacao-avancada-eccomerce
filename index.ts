@@ -166,6 +166,29 @@ class PedidoProdutoFisico extends Pedido implements IPedidoComPagamento, IPedido
     }
 }
 
+const pedido = new PedidoProdutoFisico(100, "VIP");
+
+const calculadora = new CalculadoraDescontoPedido([
+    new DescontoClienteVip(),
+    new DescontoClienteEstudante(),
+    new DescontoClientePremium(),
+    new SemDesconto()
+]);
+
+//exemplos de uso
+console.log("Desconto:", calculadora.calcular(pedido));
+console.log("Frete:", pedido.calcularFrete());
+
+pedido.processarPagamento();
+pedido.gerarNotaFiscal();
+pedido.imprimirEtiquetaFisica();
+
+const repository = new PedidoRepository(new BancoDeDadosMySQL());
+repository.salvar(pedido);
+
+const emailService = new EmailPedidoService();
+emailService.enviarConfirmacao();
+
 /*
 As mudanças aplicam os cinco princípios SOLID: em SRP, Pedido deixou de calcular desconto,
 salvar no banco e enviar e-mail, ficando apenas com os dados da entidade; em OCP, os descontos
