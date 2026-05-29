@@ -1,7 +1,17 @@
-// 1. Classe de Banco de Dados Concreta
-class BancoDeDadosMySQL {
+// 1. Abstracao e implementacoes de banco de dados
+interface IBancoDeDados {
+    salvar(dados: any): void;
+}
+
+class BancoDeDadosMySQL implements IBancoDeDados {
     salvar(dados: any): void {
         console.log("Salvando dados no MySQL...");
+    }
+}
+
+class BancoDeDadosPostgreSQL implements IBancoDeDados {
+    salvar(dados: any): void {
+        console.log("Salvando dados no PostgreSQL...");
     }
 }
 
@@ -88,9 +98,9 @@ class CalculadoraFretePedidoFisico {
 }
 
 class PedidoRepository {
-    private bancoDeDados: BancoDeDadosMySQL;
+    private bancoDeDados: IBancoDeDados;
 
-    constructor(bancoDeDados: BancoDeDadosMySQL) {
+    constructor(bancoDeDados: IBancoDeDados) {
         this.bancoDeDados = bancoDeDados;
     }
 
