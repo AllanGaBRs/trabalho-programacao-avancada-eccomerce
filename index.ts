@@ -5,14 +5,7 @@ class BancoDeDadosMySQL {
     }
 }
 
-// 2. Interface de tarefas do pedido
-interface ITarefasPedido {
-    processarPagamento(): void;
-    gerarNotaFiscal(): void;
-    imprimirEtiquetaFisica(): void;
-}
-
-// 3. Classe principal de Pedido
+// 2. Entidade principal de Pedido
 class Pedido {
     public valorTotal: number;
     public tipoCliente: string;
@@ -21,37 +14,54 @@ class Pedido {
         this.valorTotal = valorTotal;
         this.tipoCliente = tipoCliente;
     }
+}
 
-    calcularDesconto(): number {
-        if (this.tipoCliente === "VIP") {
-            return this.valorTotal * 0.20;
-        } else if (this.tipoCliente === "ESTUDANTE") {
-            return this.valorTotal * 0.10;
+// 3. Servicos com responsabilidades especificas
+class CalculadoraDescontoPedido {
+    calcular(pedido: Pedido): number {
+        if (pedido.tipoCliente === "VIP") {
+            return pedido.valorTotal * 0.20;
+        } else if (pedido.tipoCliente === "ESTUDANTE") {
+            return pedido.valorTotal * 0.10;
         }
+
         return 0;
     }
+}
 
-    calcularFrete(): number {
+class CalculadoraFretePedidoFisico {
+    calcular(): number {
         return 15.0;
     }
+}
 
-    salvarPedido(): void {
-        const db = new BancoDeDadosMySQL();
-        db.salvar(this);
+class PedidoRepository {
+    private bancoDeDados: BancoDeDadosMySQL;
+
+    constructor(bancoDeDados: BancoDeDadosMySQL) {
+        this.bancoDeDados = bancoDeDados;
     }
 
-    enviarEmailConfirmacao(): void {
+    salvar(pedido: Pedido): void {
+        this.bancoDeDados.salvar(pedido);
+    }
+}
+
+class EmailPedidoService {
+    enviarConfirmacao(): void {
         console.log("Enviando e-mail de confirmação para o cliente...");
     }
 }
 
-// 4. Implementação para produtos digitais
-class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
-   
-    calcularFrete(): number {
-        throw new Error("Erro: Produtos digitais não possuem frete.");
-    }
+// 4. Interface de tarefas do pedido
+interface ITarefasPedido {
+    processarPagamento(): void;
+    gerarNotaFiscal(): void;
+    imprimirEtiquetaFisica(): void;
+}
 
+// 5. Implementacao para produtos digitais
+class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
     processarPagamento(): void {
         console.log("Pagamento processado online.");
     }
