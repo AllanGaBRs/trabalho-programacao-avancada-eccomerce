@@ -1,21 +1,23 @@
-// 1. Abstracao e implementacoes de banco de dados
+// DIP: a persistencia depende desta abstracao, nao de um banco concreto.
 interface IBancoDeDados {
     salvar(dados: any): void;
 }
 
+// Implementacao concreta que pode ser trocada sem alterar o repositorio.
 class BancoDeDadosMySQL implements IBancoDeDados {
     salvar(dados: any): void {
         console.log("Salvando dados no MySQL...");
     }
 }
 
+// Exemplo de outra implementacao da mesma abstracao.
 class BancoDeDadosPostgreSQL implements IBancoDeDados {
     salvar(dados: any): void {
         console.log("Salvando dados no PostgreSQL...");
     }
 }
 
-// 2. Entidade principal de Pedido
+// SRP: Pedido representa apenas os dados essenciais do pedido.
 class Pedido {
     public valorTotal: number;
     public tipoCliente: string;
@@ -26,7 +28,7 @@ class Pedido {
     }
 }
 
-// 3. Estrategias de desconto
+// OCP: novas regras de desconto podem ser criadas implementando esta interface.
 interface IEstrategiaDesconto {
     aplicaPara(tipoCliente: string): boolean;
     calcular(pedido: Pedido): number;
@@ -72,7 +74,7 @@ class SemDesconto implements IEstrategiaDesconto {
     }
 }
 
-// 4. Servicos com responsabilidades especificas
+// SRP/OCP: a calculadora apenas escolhe e executa uma estrategia de desconto.
 class CalculadoraDescontoPedido {
     private estrategias: IEstrategiaDesconto[];
 
@@ -97,6 +99,7 @@ class CalculadoraFretePedidoFisico {
     }
 }
 
+// DIP: o repositorio recebe uma abstracao por injecao de dependencia.
 class PedidoRepository {
     private bancoDeDados: IBancoDeDados;
 
@@ -109,13 +112,14 @@ class PedidoRepository {
     }
 }
 
+// SRP: o envio de e-mail fica isolado em um servico proprio.
 class EmailPedidoService {
     enviarConfirmacao(): void {
         console.log("Enviando e-mail de confirmação para o cliente...");
     }
 }
 
-// 5. Interfaces de capacidades do pedido
+// ISP: cada interface representa uma capacidade pequena e coesa.
 interface IPedidoComPagamento {
     processarPagamento(): void;
 }
@@ -132,7 +136,7 @@ interface IPedidoComEtiquetaFisica {
     imprimirEtiquetaFisica(): void;
 }
 
-// 6. Implementacoes especificas de pedidos
+// LSP/ISP: pedido digital implementa somente capacidades que fazem sentido para ele.
 class PedidoProdutoDigital extends Pedido implements IPedidoComPagamento, IPedidoComNotaFiscal {
     processarPagamento(): void {
         console.log("Pagamento processado online.");
@@ -143,6 +147,7 @@ class PedidoProdutoDigital extends Pedido implements IPedidoComPagamento, IPedid
     }
 }
 
+// LSP/ISP: pedido fisico pode substituir Pedido e tambem oferece capacidades fisicas.
 class PedidoProdutoFisico extends Pedido implements IPedidoComPagamento, IPedidoComNotaFiscal, IPedidoComFrete, IPedidoComEtiquetaFisica {
     calcularFrete(): number {
         return 15.0;
@@ -160,3 +165,14 @@ class PedidoProdutoFisico extends Pedido implements IPedidoComPagamento, IPedido
         console.log("Etiqueta física impressa.");
     }
 }
+
+/*
+As mudanças aplicam os cinco princípios SOLID: em SRP, Pedido deixou de calcular desconto,
+salvar no banco e enviar e-mail, ficando apenas com os dados da entidade; em OCP, os descontos
+foram movidos para estratégias polimórficas, permitindo adicionar novos tipos de cliente sem
+alterar a calculadora; em LSP, pedidos digitais não herdam nem implementam operações físicas que
+causariam exceções; em ISP, as capacidades foram separadas em interfaces pequenas como pagamento,
+nota fiscal, frete e etiqueta; em DIP, PedidoRepository passou a depender da abstração
+IBancoDeDados, recebida por injeção, permitindo trocar o banco ou usar implementações falsas em
+testes sem modificar a classe de persistência.
+*/
